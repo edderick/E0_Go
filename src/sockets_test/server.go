@@ -2,8 +2,7 @@ package main
 
 import "fmt"
 import "net"
-import "io"
-import "os"
+import "bufio"
 
 func main() {
     ln, err := net.Listen("tcp", ":8080")
@@ -17,9 +16,14 @@ func main() {
             continue
         }
         go func(c net.Conn) {
-            fmt.Printf("Established Connection")
+            fmt.Printf("Established Connection\n")
             // Echo all incoming data.
-            io.Copy(os.Stdout, c)
+
+            status, _ := bufio.NewReader(c).ReadString('\n')
+            fmt.Printf(status)
+
+            fmt.Fprintf(c, "Thank you for your message\n")
+
             // Shut down the connection.
             c.Close()
         }(conn)

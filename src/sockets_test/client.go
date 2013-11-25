@@ -10,7 +10,7 @@ func main() {
             // handle error
         }
     
-    fmt.Fprintf(conn, "Message from Client")
+    fmt.Fprintf(conn, "Message from Client\n")
     
     status, err := bufio.NewReader(conn).ReadString('\n')
     
