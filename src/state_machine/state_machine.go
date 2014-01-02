@@ -23,7 +23,7 @@ func T2(in int) int {
     return out
 }
 
-func (sm StateMachine) step(x1, x2, x3, x4 int) bool {
+func (sm *StateMachine) step(x1, x2, x3, x4 int) bool {
     y := x1 + x2 + x3 + x4
 
     s := (y + sm.c_t) / 2
