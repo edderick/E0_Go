@@ -27,18 +27,11 @@ func Test_Simple(t *testing.T) {
 }
 
 func Test_Four(t *testing.T) {
-    tap_1 := []int{25, 20, 12, 8}
-    tap_2 := []int{31, 24, 16, 12}
-    tap_3 := []int{33, 28, 24, 4}
-    tap_4 := []int{39, 36, 20, 4}
 
-    lfsr_1 := NewLFSR(25, tap_1)
-    lfsr_2 := NewLFSR(31, tap_2)
-    lfsr_3 := NewLFSR(33, tap_3)
-    lfsr_4 := NewLFSR(39, tap_4)
+    e0_l := NewE0_LFSRs()
 
-    fmt.Println(lfsr_1.Next())
-    fmt.Println(lfsr_2.Next())
-    fmt.Println(lfsr_3.Next())
-    fmt.Println(lfsr_4.Next())
+    fmt.Println(e0_l.lfsr_1.Next())
+    fmt.Println(e0_l.lfsr_2.Next())
+    fmt.Println(e0_l.lfsr_3.Next())
+    fmt.Println(e0_l.lfsr_4.Next())
 }
