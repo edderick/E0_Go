@@ -1,4 +1,4 @@
-package lfsr 
+package lfsr
 
 import "testing"
 import "fmt"
@@ -6,8 +6,8 @@ import "fmt"
 func Test_Simple(t *testing.T) {
     taps := []int{1, 2, 3, 4, 5}
 
-    l := NewLFSR(10, taps)
-  
+    l := NewLFSR(10, taps, 10)
+
     fmt.Println(l)
     l.Shift(true)
     l.Shift(true)
@@ -34,7 +34,7 @@ func Test_Four(t *testing.T) {
     fmt.Println(e0_l.lfsr_2.NextBit(false))
     fmt.Println(e0_l.lfsr_3.NextBit(false))
     fmt.Println(e0_l.lfsr_4.NextBit(false))
-    
+
     fmt.Println(e0_l)
 
 }

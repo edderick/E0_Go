@@ -14,11 +14,11 @@ func NewE0_LFSRs() *E0_LFSRs {
     tap_4 := []int{39, 36, 20, 4}
 
     e0_lfsrs := new(E0_LFSRs)
-    
-    e0_lfsrs.lfsr_1 = NewLFSR(25, tap_1)
-    e0_lfsrs.lfsr_2 = NewLFSR(31, tap_2)
-    e0_lfsrs.lfsr_3 = NewLFSR(33, tap_3)
-    e0_lfsrs.lfsr_4 = NewLFSR(39, tap_4)
+
+    e0_lfsrs.lfsr_1 = NewLFSR(25, tap_1, 24)
+    e0_lfsrs.lfsr_2 = NewLFSR(31, tap_2, 24)
+    e0_lfsrs.lfsr_3 = NewLFSR(33, tap_3, 32)
+    e0_lfsrs.lfsr_4 = NewLFSR(39, tap_4, 32)
 
     return e0_lfsrs
 }
@@ -41,9 +41,9 @@ func init_lfsr_1(lfsr *LFSR, Kc []byte, bd_addr []byte, clk []byte) {
 }
 
 func init_lfsr_2(lfsr *LFSR, Kc []byte, bd_addr []byte, clk []byte) {
-    lfsr.NextBit(true) 
-    lfsr.NextBit(false) 
-    lfsr.NextBit(false) 
+    lfsr.NextBit(true)
+    lfsr.NextBit(false)
+    lfsr.NextBit(false)
     lfsr.NextBit((clk[0] & (1 << 0)) != 0) //CL0L0
     lfsr.NextBit((clk[0] & (1 << 1)) != 0) //CL0L1
     lfsr.NextBit((clk[0] & (1 << 2)) != 0) //CL0L2
@@ -67,9 +67,9 @@ func init_lfsr_3(lfsr *LFSR, Kc []byte, bd_addr []byte, clk []byte) {
 }
 
 func init_lfsr_4(lfsr *LFSR, Kc []byte, bd_addr []byte, clk []byte) {
-    lfsr.NextBit(true) 
-    lfsr.NextBit(true) 
-    lfsr.NextBit(true) 
+    lfsr.NextBit(true)
+    lfsr.NextBit(true)
+    lfsr.NextBit(true)
     lfsr.NextBit((clk[0] & (1 << 4)) != 0) //CL0U0
     lfsr.NextBit((clk[0] & (1 << 5)) != 0) //CL0U1
     lfsr.NextBit((clk[0] & (1 << 6)) != 0) //CL0U2

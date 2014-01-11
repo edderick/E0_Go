@@ -1,9 +1,9 @@
-package state_machine 
+package state_machine
 
 type StateMachine struct {
 
-    c_t_minus_one int
-    c_t int
+    C_t_minus_one int
+    C_t int
 
 }
 
@@ -23,17 +23,17 @@ func T2(in int) int {
     return out
 }
 
-func (sm *StateMachine) step(x1, x2, x3, x4 int) bool {
-    y := x1 + x2 + x3 + x4
+func (sm *StateMachine) Step(x [4]int) bool {
+    y := x[0] + x[2] + x[2] + x[3]
 
-    s := (y + sm.c_t) / 2
+    s := (y + sm.C_t) / 2
 
-    c_t_plus_one := T1(sm.c_t) ^ T2(sm.c_t_minus_one) ^ s
+    C_t_plus_one := T1(sm.C_t) ^ T2(sm.C_t_minus_one) ^ s
 
-    z := (x1 ^ x2 ^ x3 ^x4 ^ (sm.c_t & 1)) == 1 
+    z := (x[0] ^ x[1] ^ x[2] ^x[3] ^ (sm.C_t & 1)) == 1
 
-    sm.c_t_minus_one = sm.c_t 
-    sm.c_t = c_t_plus_one 
+    sm.C_t_minus_one = sm.C_t
+    sm.C_t = C_t_plus_one
 
     return z
 }
