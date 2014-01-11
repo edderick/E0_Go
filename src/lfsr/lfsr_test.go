@@ -18,20 +18,23 @@ func Test_Simple(t *testing.T) {
     l.Shift(true)
     fmt.Println(l)
 
-    fmt.Println(l.Next())
-    fmt.Println(l.Next())
-    fmt.Println(l.Next())
-    fmt.Println(l.Next())
-    fmt.Println(l.Next())
-    fmt.Println(l.Next())
+    fmt.Println(l.NextBit(false))
+    fmt.Println(l.NextBit(false))
+    fmt.Println(l.NextBit(false))
+    fmt.Println(l.NextBit(false))
+    fmt.Println(l.NextBit(false))
+    fmt.Println(l.NextBit(false))
 }
 
 func Test_Four(t *testing.T) {
 
     e0_l := NewE0_LFSRs()
 
-    fmt.Println(e0_l.lfsr_1.Next())
-    fmt.Println(e0_l.lfsr_2.Next())
-    fmt.Println(e0_l.lfsr_3.Next())
-    fmt.Println(e0_l.lfsr_4.Next())
+    fmt.Println(e0_l.lfsr_1.NextBit(false))
+    fmt.Println(e0_l.lfsr_2.NextBit(false))
+    fmt.Println(e0_l.lfsr_3.NextBit(false))
+    fmt.Println(e0_l.lfsr_4.NextBit(false))
+    
+    fmt.Println(e0_l)
+
 }
