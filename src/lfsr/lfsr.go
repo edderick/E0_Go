@@ -34,7 +34,7 @@ func (l LFSR) feedback() bool {
     val := false
 
     for _, v := range(l.taps) {
-        val = bool_xor(val, l.values[v])
+        val = bool_xor(val, l.values[v - 1])
     }
 
     return val
