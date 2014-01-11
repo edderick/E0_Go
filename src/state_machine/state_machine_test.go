@@ -259,3 +259,25 @@ func Test_MultipleTwo(t *testing.T) {
         t.Error("Failed for a two inputs as one, the rest zero, six step.")
    }
 }
+
+func Test_Three(t *testing.T) {
+   sm := StateMachine{0, 0}
+
+   expected := true
+   actual := sm.step(1, 1, 1, 0)
+
+   if expected != actual {
+        t.Error("Failed for a three inputs as one, the rest zero, single step.")
+   }
+}
+
+func Test_Four(t *testing.T) {
+   sm := StateMachine{0, 0}
+
+   expected := false
+   actual := sm.step(1, 1, 1, 1)
+
+   if expected != actual {
+        t.Error("Failed for a three inputs as one, the rest zero, single step.")
+   }
+}
