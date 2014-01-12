@@ -87,7 +87,7 @@ func (l *LFSR) GetOutput() bool{
 }
 
 func (l *LFSR) ParallelLoad(in uint64){
-	for i := len(l.values) -1; i >= 0; i--{
+	for i := range(l.values){
 		l.values[i] = (in & 1) == 1
 		in = in >> 1
 	}
@@ -97,7 +97,7 @@ func (l *LFSR) GetContents() uint64{
 	var x uint64
 	for i, v := range(l.values){
 		if v{
-			x = x | 1 << (uint(len(l.values)) - 1 - uint(i))
+			x = x | 1 << uint(i)
 		}
 	}
 	return x

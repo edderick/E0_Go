@@ -6,7 +6,7 @@ func Test_Zero(t *testing.T) {
    sm := StateMachine{0, 0}
 
    expected := false
-   actual := sm.step(0, 0, 0, 0)
+   actual := sm.Step([4]int{0, 0, 0, 0})
 
    if expected != actual {
         t.Error("Failed for all inputs as zero, single step.")
@@ -17,8 +17,8 @@ func Test_DoubleZero(t *testing.T) {
    sm := StateMachine{0, 0}
 
    expected := false
-   sm.step(0, 0, 0, 0)
-   actual := sm.step(0, 0, 0, 0)
+   sm.Step([4]int{0, 0, 0, 0})
+   actual := sm.Step([4]int{0, 0, 0, 0})
 
    if expected != actual {
         t.Error("Failed for all inputs as zero, double step.")
@@ -29,15 +29,15 @@ func Test_MultipleZero(t *testing.T) {
    sm := StateMachine{0, 0}
 
    expected := false
-   sm.step(0, 0, 0, 0)
-   sm.step(0, 0, 0, 0)
-   sm.step(0, 0, 0, 0)
-   sm.step(0, 0, 0, 0)
-   sm.step(0, 0, 0, 0)
-   sm.step(0, 0, 0, 0)
-   sm.step(0, 0, 0, 0)
-   sm.step(0, 0, 0, 0)
-   actual := sm.step(0, 0, 0, 0)
+   sm.Step([4]int{0, 0, 0, 0})
+   sm.Step([4]int{0, 0, 0, 0})
+   sm.Step([4]int{0, 0, 0, 0})
+   sm.Step([4]int{0, 0, 0, 0})
+   sm.Step([4]int{0, 0, 0, 0})
+   sm.Step([4]int{0, 0, 0, 0})
+   sm.Step([4]int{0, 0, 0, 0})
+   sm.Step([4]int{0, 0, 0, 0})
+   actual := sm.Step([4]int{0, 0, 0, 0})
 
    if expected != actual {
         t.Error("Failed for all inputs as zero, many step.")
@@ -48,28 +48,28 @@ func Test_One(t *testing.T) {
    sm := StateMachine{0, 0}
 
    expected := true
-   actual := sm.step(1, 0, 0, 0)
+   actual := sm.Step([4]int{1, 0, 0, 0})
 
    if expected != actual {
         t.Error("Failed for a single input as one, the rest zero, single step.")
    }
-   
+
    expected = true
-   actual = sm.step(0, 1, 0, 0)
+   actual = sm.Step([4]int{0, 1, 0, 0})
 
    if expected != actual {
         t.Error("Failed for a single input as one, the rest zero, single step.")
    }
-   
+
    expected = true
-   actual = sm.step(0, 0, 1, 0)
+   actual = sm.Step([4]int{0, 0, 1, 0})
 
    if expected != actual {
         t.Error("Failed for a single input as one, the rest zero, single step.")
    }
-   
+
    expected = true
-   actual = sm.step(0, 0, 0, 1)
+   actual = sm.Step([4]int{0, 0, 0, 1})
 
    if expected != actual {
         t.Error("Failed for a single input as one, the rest zero, single step.")
@@ -82,32 +82,32 @@ func Test_DoubleOne(t *testing.T) {
    sm := StateMachine{0, 0}
 
    expected := true
-   sm.step(1, 0, 0, 0)
-   actual := sm.step(1, 0, 0, 0)
+   sm.Step([4]int{1, 0, 0, 0})
+   actual := sm.Step([4]int{1, 0, 0, 0})
 
    if expected != actual {
         t.Error("Failed for a single input as one, the rest zero, double step.")
    }
-   
+
    expected = true
-   sm.step(0, 1, 0, 0)
-   actual = sm.step(0, 1, 0, 0)
+   sm.Step([4]int{0, 1, 0, 0})
+   actual = sm.Step([4]int{0, 1, 0, 0})
 
    if expected != actual {
         t.Error("Failed for a single input as one, the rest zero, double step.")
    }
-   
+
    expected = true
-   sm.step(0, 0, 1, 0)
-   actual = sm.step(0, 0, 1, 0)
+   sm.Step([4]int{0, 0, 1, 0})
+   actual = sm.Step([4]int{0, 0, 1, 0})
 
    if expected != actual {
         t.Error("Failed for a single input as one, the rest zero, double step.")
    }
-   
+
    expected = true
-   sm.step(0, 0, 0, 1)
-   actual = sm.step(0, 0, 0, 1)
+   sm.Step([4]int{0, 0, 0, 1})
+   actual = sm.Step([4]int{0, 0, 0, 1})
 
    if expected != actual {
         t.Error("Failed for a single input as one, the rest zero, double step.")
@@ -118,48 +118,48 @@ func Test_MultipleOne(t *testing.T) {
    sm := StateMachine{0, 0}
 
    expected := true
-   sm.step(1, 0, 0, 0)
-   sm.step(1, 0, 0, 0)
-   sm.step(1, 0, 0, 0)
-   sm.step(1, 0, 0, 0)
-   sm.step(1, 0, 0, 0)
-   actual := sm.step(1, 0, 0, 0)
+   sm.Step([4]int{1, 0, 0, 0})
+   sm.Step([4]int{1, 0, 0, 0})
+   sm.Step([4]int{1, 0, 0, 0})
+   sm.Step([4]int{1, 0, 0, 0})
+   sm.Step([4]int{1, 0, 0, 0})
+   actual := sm.Step([4]int{1, 0, 0, 0})
 
    if expected != actual {
         t.Error("Failed for a single input as one, the rest zero, many step.")
    }
-   
+
    expected = true
-   sm.step(0, 1, 0, 0)
-   sm.step(0, 1, 0, 0)
-   sm.step(0, 1, 0, 0)
-   sm.step(0, 1, 0, 0)
-   sm.step(0, 1, 0, 0)
-   actual = sm.step(0, 1, 0, 0)
+   sm.Step([4]int{0, 1, 0, 0})
+   sm.Step([4]int{0, 1, 0, 0})
+   sm.Step([4]int{0, 1, 0, 0})
+   sm.Step([4]int{0, 1, 0, 0})
+   sm.Step([4]int{0, 1, 0, 0})
+   actual = sm.Step([4]int{0, 1, 0, 0})
 
    if expected != actual {
         t.Error("Failed for a single input as one, the rest zero, many step.")
    }
-   
+
    expected = true
-   sm.step(0, 0, 1, 0)
-   sm.step(0, 0, 1, 0)
-   sm.step(0, 0, 1, 0)
-   sm.step(0, 0, 1, 0)
-   sm.step(0, 0, 1, 0)
-   actual = sm.step(0, 0, 1, 0)
+   sm.Step([4]int{0, 0, 1, 0})
+   sm.Step([4]int{0, 0, 1, 0})
+   sm.Step([4]int{0, 0, 1, 0})
+   sm.Step([4]int{0, 0, 1, 0})
+   sm.Step([4]int{0, 0, 1, 0})
+   actual = sm.Step([4]int{0, 0, 1, 0})
 
    if expected != actual {
         t.Error("Failed for a single input as one, the rest zero, many step.")
    }
-   
+
    expected = true
-   sm.step(0, 0, 0, 1)
-   sm.step(0, 0, 0, 1)
-   sm.step(0, 0, 0, 1)
-   sm.step(0, 0, 0, 1)
-   sm.step(0, 0, 0, 1)
-   actual = sm.step(0, 0, 0, 1)
+   sm.Step([4]int{0, 0, 0, 1})
+   sm.Step([4]int{0, 0, 0, 1})
+   sm.Step([4]int{0, 0, 0, 1})
+   sm.Step([4]int{0, 0, 0, 1})
+   sm.Step([4]int{0, 0, 0, 1})
+   actual = sm.Step([4]int{0, 0, 0, 1})
 
    if expected != actual {
         t.Error("Failed for a single input as one, the rest zero, many step.")
@@ -171,32 +171,32 @@ func Test_PermutingOne(t *testing.T) {
    sm := StateMachine{0, 0}
 
    expected := true
-   sm.step(1, 0, 0, 0)
-   sm.step(0, 1, 0, 0)
-   sm.step(0, 0, 1, 0)
-   sm.step(0, 0, 0, 1)
-   sm.step(1, 0, 0, 0)
-   sm.step(1, 0, 0, 0)
-   sm.step(0, 0, 1, 0)
-   sm.step(1, 0, 0, 0)
-   sm.step(1, 0, 0, 0)
-   sm.step(1, 0, 0, 0)
-   sm.step(0, 1, 0, 0)
-   sm.step(0, 0, 1, 0)
-   sm.step(0, 0, 0, 1)
-   sm.step(0, 1, 0, 0)
-   sm.step(0, 0, 1, 0)
-   sm.step(0, 0, 0, 1)
-   sm.step(0, 1, 0, 0)
-   sm.step(0, 0, 1, 0)
-   sm.step(0, 0, 0, 1)
-   sm.step(0, 1, 0, 0)
-   sm.step(0, 0, 1, 0)
-   sm.step(0, 0, 0, 1)
-   sm.step(0, 1, 0, 0)
-   sm.step(0, 0, 1, 0)
-   sm.step(0, 0, 0, 1)
-   actual := sm.step(1, 0, 0, 0)
+   sm.Step([4]int{1, 0, 0, 0})
+   sm.Step([4]int{0, 1, 0, 0})
+   sm.Step([4]int{0, 0, 1, 0})
+   sm.Step([4]int{0, 0, 0, 1})
+   sm.Step([4]int{1, 0, 0, 0})
+   sm.Step([4]int{1, 0, 0, 0})
+   sm.Step([4]int{0, 0, 1, 0})
+   sm.Step([4]int{1, 0, 0, 0})
+   sm.Step([4]int{1, 0, 0, 0})
+   sm.Step([4]int{1, 0, 0, 0})
+   sm.Step([4]int{0, 1, 0, 0})
+   sm.Step([4]int{0, 0, 1, 0})
+   sm.Step([4]int{0, 0, 0, 1})
+   sm.Step([4]int{0, 1, 0, 0})
+   sm.Step([4]int{0, 0, 1, 0})
+   sm.Step([4]int{0, 0, 0, 1})
+   sm.Step([4]int{0, 1, 0, 0})
+   sm.Step([4]int{0, 0, 1, 0})
+   sm.Step([4]int{0, 0, 0, 1})
+   sm.Step([4]int{0, 1, 0, 0})
+   sm.Step([4]int{0, 0, 1, 0})
+   sm.Step([4]int{0, 0, 0, 1})
+   sm.Step([4]int{0, 1, 0, 0})
+   sm.Step([4]int{0, 0, 1, 0})
+   sm.Step([4]int{0, 0, 0, 1})
+   actual := sm.Step([4]int{1, 0, 0, 0})
 
    if expected != actual {
         t.Error("Failed for a single input as one, the rest zero, many step, random permutations.")
@@ -207,7 +207,7 @@ func Test_Two(t *testing.T) {
    sm := StateMachine{0, 0}
 
    expected := false
-   actual := sm.step(1, 1, 0, 0)
+   actual := sm.Step([4]int{1, 1, 0, 0})
 
    if expected != actual {
         t.Error("Failed for a two inputs as one, the rest zero, single step.")
@@ -218,8 +218,8 @@ func Test_DoubleTwo(t *testing.T) {
    sm := StateMachine{0, 0}
 
    expected := true
-   sm.step(1, 1, 0, 0)
-   actual := sm.step(1, 1, 0, 0)
+   sm.Step([4]int{1, 1, 0, 0})
+   actual := sm.Step([4]int{1, 1, 0, 0})
 
    if expected != actual {
         t.Error("Failed for a two inputs as one, the rest zero, double step.")
@@ -230,30 +230,30 @@ func Test_MultipleTwo(t *testing.T) {
    sm := StateMachine{0, 0}
 
    expected := false
-   sm.step(1, 1, 0, 0)
-   sm.step(1, 1, 0, 0)
-   actual := sm.step(1, 1, 0, 0)
+   sm.Step([4]int{1, 1, 0, 0})
+   sm.Step([4]int{1, 1, 0, 0})
+   actual := sm.Step([4]int{1, 1, 0, 0})
 
    if expected != actual {
         t.Error("Failed for a two inputs as one, the rest zero, three step.")
    }
-   
+
    expected = false
-   actual = sm.step(1, 1, 0, 0)
+   actual = sm.Step([4]int{1, 1, 0, 0})
 
    if expected != actual {
         t.Error("Failed for a two inputs as one, the rest zero, four step.")
    }
-   
+
    expected = false
-   actual = sm.step(1, 1, 0, 0)
+   actual = sm.Step([4]int{1, 1, 0, 0})
 
    if expected != actual {
         t.Error("Failed for a two inputs as one, the rest zero, five step.")
    }
 
    expected = false
-   actual = sm.step(1, 1, 0, 0)
+   actual = sm.Step([4]int{1, 1, 0, 0})
 
    if expected != actual {
         t.Error("Failed for a two inputs as one, the rest zero, six step.")
@@ -264,7 +264,7 @@ func Test_Three(t *testing.T) {
    sm := StateMachine{0, 0}
 
    expected := true
-   actual := sm.step(1, 1, 1, 0)
+   actual := sm.Step([4]int{1, 1, 1, 0})
 
    if expected != actual {
         t.Error("Failed for a three inputs as one, the rest zero, single step.")
@@ -275,7 +275,7 @@ func Test_Four(t *testing.T) {
    sm := StateMachine{0, 0}
 
    expected := false
-   actual := sm.step(1, 1, 1, 1)
+   actual := sm.Step([4]int{1, 1, 1, 1})
 
    if expected != actual {
         t.Error("Failed for a three inputs as one, the rest zero, single step.")
