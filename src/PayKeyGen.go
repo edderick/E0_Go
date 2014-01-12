@@ -10,6 +10,7 @@ func main(){
 	var Kc [16]byte = [16]byte{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255}
 	var BD_ADDR [6]byte = [6]byte{255, 255, 255, 255, 255, 255}
 	var CLK26 [4]byte = [4]byte{255, 255, 255, 3}
+	var bytesReq int = 8;
 
 	var lfsrs [4]*lfsr.LFSR
 	lfsrs[0] = lfsr.NewLFSR(25, []int{8, 12, 20, 25}, 24)
@@ -52,18 +53,53 @@ func main(){
 	}
 
 	var sm state_machine.StateMachine = state_machine.StateMachine{0, 0}
-	fmt.Println(sm)
-	var Z [25]byte
+	var Z [16]byte
 	var lfsrout [4]int
 	var z bool
-	fmt.Println(Z, z)
-	fmt.Println(lfsrout)
 	for t := 39; t < 239; t++{
 		ClockLFSRs(lfsrs, &inputs)
 		lfsrout = GetLFSROut(lfsrs)
-		z := sm.Step(lfsrout)
-		fmt.Println(z) //TODO put z into Z then use as initialisation value
+		z = sm.Step(lfsrout)
+		if z && t >= 111{
+			Z[(t-111)/8] = Z[(t-111)/8] | (1 << ((uint(t) - 111) % 8))
+		}
 	}
+
+	var pinputs [4]uint64
+	pinputs[0] = (uint64(Z[0]) << 17) |
+			(uint64(Z[4]) << 9) |
+			(uint64(Z[8]) << 1) |
+			uint64(Z[12] & 1)
+	pinputs[1] = (uint64(Z[1]) << 23) |
+			(uint64(Z[5]) << 15) |
+			(uint64(Z[9]) << 7) |
+			(uint64(Z[12] & 254) >> 1)
+	pinputs[2] = (uint64(Z[2]) << 25) |
+			(uint64(Z[6]) << 17) |
+			(uint64(Z[10]) << 9) |
+			(uint64(Z[13]) << 1) |
+			uint64(Z[15] & 1)
+	pinputs[3] = (uint64(Z[3]) << 31) |
+			(uint64(Z[7]) << 23) |
+			(uint64(Z[11]) << 15) |
+			(uint64(Z[14]) << 7) |
+			(uint64(Z[15] & 254) >> 1)
+
+	for x := 0; x < 4; x++{
+		lfsrs[x].ParallelLoad(pinputs[x])
+	}
+
+	var PayloadKey = make([]byte, bytesReq)
+	for t := 240; t < 240 + bytesReq * 8; t++{
+		lfsrout = GetLFSROut(lfsrs)
+		z := sm.Step(lfsrout)
+		if z{
+			PayloadKey[(t-240)/8] = PayloadKey[(t-240)/8] | (1 << (uint(t) % 8))
+		}
+		ClockLFSRs(lfsrs, &inputs)
+	}
+
+	fmt.Println(PayloadKey)
 }
 
 func GetLFSROut(lfsrs [4]*lfsr.LFSR) [4]int {

@@ -85,3 +85,10 @@ func (l *LFSR) NextByte(val byte) byte {
 func (l *LFSR) GetOutput() bool{
 	return l.values[l.output - 1]
 }
+
+func (l *LFSR) ParallelLoad(in uint64){
+	for i := len(l.values) -1; i >= 0; i--{
+		l.values[i] = (in & 1) == 1
+		in = in >> 1
+	}
+}
