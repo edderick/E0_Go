@@ -92,3 +92,13 @@ func (l *LFSR) ParallelLoad(in uint64){
 		in = in >> 1
 	}
 }
+
+func (l *LFSR) GetContents() uint64{
+	var x uint64
+	for i, v := range(l.values){
+		if v{
+			x = x | 1 << (uint(len(l.values)) - 1 - uint(i))
+		}
+	}
+	return x
+}

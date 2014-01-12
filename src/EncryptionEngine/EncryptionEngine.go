@@ -1,4 +1,4 @@
-package main
+package EncryptionEngine
 
 import (
 	"fmt"
@@ -6,12 +6,8 @@ import (
 	"./state_machine"
 )
 
-func main(){
-	var Kc [16]byte = [16]byte{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255}
-	var BD_ADDR [6]byte = [6]byte{255, 255, 255, 255, 255, 255}
-	var CLK26 [4]byte = [4]byte{255, 255, 255, 3}
-	var bytesReq int = 8;
-
+func GetPayloadKey(Kc [16]byte, BD_ADDR [6]byte, CLK26 [4]byte,
+		bytesReq int) []byte{
 	var lfsrs [4]*lfsr.LFSR
 	lfsrs[0] = lfsr.NewLFSR(25, []int{8, 12, 20, 25}, 24)
 	lfsrs[1] = lfsr.NewLFSR(31, []int{12, 16, 24, 31}, 24)
@@ -48,11 +44,11 @@ func main(){
 			(uint64(Kc[3]) << 7) |
 			(uint64(CLK26[0] & 240) >> 1) | 7
 
+	var sm state_machine.StateMachine = state_machine.StateMachine{0, 0}
 	for t := 0; t < 39; t++{
 		ClockLFSRs(lfsrs, &inputs)
 	}
 
-	var sm state_machine.StateMachine = state_machine.StateMachine{0, 0}
 	var Z [16]byte
 	var lfsrout [4]int
 	var z bool
@@ -99,7 +95,15 @@ func main(){
 		ClockLFSRs(lfsrs, &inputs)
 	}
 
-	fmt.Println(PayloadKey)
+	return PayloadKey
+}
+
+func PrintState(lfsrs [4]*lfsr.LFSR, sm *state_machine.StateMachine){
+	for x := 0; x < 4; x++{
+		fmt.Printf("% x ", lfsrs[x].GetContents())
+	}
+
+	fmt.Printf("%d %d\n", sm.C_t, sm.C_t_minus_one)
 }
 
 func GetLFSROut(lfsrs [4]*lfsr.LFSR) [4]int {
