@@ -25,9 +25,6 @@ func T2(in int) int {
 }
 
 func (sm *StateMachine) Step(x [4]int) bool {
-
-    sm.C_t_minus_one = sm.C_t
-    sm.C_t = sm.C_t_plus_one
     y := x[0] + x[1] + x[2] + x[3]
 
     s := (y + sm.C_t) / 2
@@ -35,6 +32,9 @@ func (sm *StateMachine) Step(x [4]int) bool {
     sm.C_t_plus_one = T1(sm.C_t) ^ T2(sm.C_t_minus_one) ^ s
 
     z := (x[0] ^ x[1] ^ x[2] ^x[3] ^ (sm.C_t & 1)) == 1
+
+    sm.C_t_minus_one = sm.C_t
+    sm.C_t = sm.C_t_plus_one
 
     return z
 }
