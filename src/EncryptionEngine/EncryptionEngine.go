@@ -6,13 +6,8 @@ import (
 	"./state_machine"
 )
 
-func GetPayloadKey(Kc [16]byte, BD_ADDR [6]byte, CLK26 [4]byte,
+func GetKeyStream(Kc [16]byte, BD_ADDR [6]byte, CLK26 [4]byte,
 		bytesReq int) []byte{
-
-	fmt.Printf("Kc:	% X\n", Kc)
-	fmt.Printf("BD_ADR:	% X\n", BD_ADDR)
-	fmt.Printf("CLK26:	% X\n", CLK26)
-
 	var lfsrs [4]*lfsr.LFSR
 	lfsrs[0] = lfsr.NewLFSR(25, []int{8, 12, 20, 25}, 24)
 	lfsrs[1] = lfsr.NewLFSR(31, []int{12, 16, 24, 31}, 24)
@@ -50,35 +45,32 @@ func GetPayloadKey(Kc [16]byte, BD_ADDR [6]byte, CLK26 [4]byte,
 			(uint64(CLK26[0] & 240) >> 1) | 7
 
 	var sm state_machine.StateMachine = state_machine.StateMachine{0, 0, 0}
-	fmt.Println(inputs)
-	PrintState(0, lfsrs, &sm)
+	var lfsrout [4]int
+	var z bool
 	for t := 0; t < 39; t++{
 		ClockLFSRs(lfsrs, &inputs)
-		PrintState(t+1, lfsrs, &sm)
+		lfsrout = GetLFSROut(lfsrs)
+		sm.FireEDC()
+		sm.Reset()
+		z = sm.Step(lfsrout)
 	}
 
 	var Z [16]byte
-	var lfsrout [4]int
-	var z bool
 	for t := 39; t < 239; t++{
 		ClockLFSRs(lfsrs, &inputs)
-		PrintState(t+1, lfsrs, &sm)
 		lfsrout = GetLFSROut(lfsrs)
+		sm.FireEDC()
 		z = sm.Step(lfsrout)
-		fmt.Println(lfsrout, z)
 		if z && t >= 111{
 			Z[(t-111)/8] = Z[(t-111)/8] | (1 << ((uint(t) - 111) % 8))
 		}
 	}
 
-	fmt.Printf("Z:	% X\n", Z)
-	fmt.Printf("Z[0]: %X\n", Z[0])
-
 	var pinputs [4]uint64
-	pinputs[0] = (uint64(Z[0])) |
+	pinputs[0] = uint64(Z[0]) |
 			(uint64(Z[4]) << 8) |
 			(uint64(Z[8]) << 16) |
-			uint64(Z[12] & 24)
+			(uint64(Z[12] & 1) << 24)
 	pinputs[1] = (uint64(Z[1])) |
 			(uint64(Z[5]) << 8) |
 			(uint64(Z[9]) << 16) |
@@ -87,31 +79,34 @@ func GetPayloadKey(Kc [16]byte, BD_ADDR [6]byte, CLK26 [4]byte,
 			(uint64(Z[6]) << 8) |
 			(uint64(Z[10]) << 16) |
 			(uint64(Z[13]) << 24) |
-			uint64(Z[15] & 1 << 32)
+			(uint64(Z[15] & 1) << 32)
 	pinputs[3] = (uint64(Z[3])) |
 			(uint64(Z[7]) << 8) |
 			(uint64(Z[11]) << 16) |
 			(uint64(Z[14]) << 24) |
 			(uint64(Z[15] & 254) << 31)
-	fmt.Printf("% X\n", pinputs)
 
 	for x := 0; x < 4; x++{
 		lfsrs[x].ParallelLoad(pinputs[x])
 	}
 
-	var PayloadKey = make([]byte, bytesReq)
-	for t := 240; t < 240 + bytesReq * 8; t++{
-		lfsrout = GetLFSROut(lfsrs)
-		z := sm.Step(lfsrout)
-		PrintState(t, lfsrs, &sm)
-		fmt.Println(lfsrout, z)
-		if z{
-			PayloadKey[(t-240)/8] = PayloadKey[(t-240)/8] | (1 << (uint(t) % 8))
-		}
+	var KeyStream = make([]byte, bytesReq)
+	lfsrout = GetLFSROut(lfsrs)
+	z = sm.Step(lfsrout)
+	if z{
+		KeyStream[0] = 1
+	}
+	for t := 240; t < 239 + bytesReq * 8; t++{
 		ClockLFSRs(lfsrs, &inputs)
+		lfsrout = GetLFSROut(lfsrs)
+		sm.FireEDC()
+		z = sm.Step(lfsrout)
+		if z{
+			KeyStream[(t-240)/8] = KeyStream[(t-240)/8] | (1 << (uint(t) % 8))
+		}
 	}
 
-	return PayloadKey
+	return KeyStream
 }
 
 func PrintState(t int, lfsrs [4]*lfsr.LFSR, sm *state_machine.StateMachine){
@@ -120,7 +115,7 @@ func PrintState(t int, lfsrs [4]*lfsr.LFSR, sm *state_machine.StateMachine){
 		fmt.Printf("% X ", lfsrs[x].GetContents())
 	}
 
-	fmt.Printf("%d %d %d\n", sm.C_t_plus_one, sm.C_t, sm.C_t_minus_one)
+	fmt.Printf("%.2b %.2b %.2b\n", sm.C_t_plus_one, sm.C_t, sm.C_t_minus_one)
 }
 
 func GetLFSROut(lfsrs [4]*lfsr.LFSR) [4]int {
