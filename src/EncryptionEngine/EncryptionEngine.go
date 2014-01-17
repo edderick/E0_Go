@@ -65,7 +65,6 @@ func GetKeyStream(Kc [16]byte, BD_ADDR [6]byte, CLK26 [4]byte,
 			Z[(t-111)/8] = Z[(t-111)/8] | (1 << ((uint(t) - 111) % 8))
 		}
 	}
-
 	var pinputs [4]uint64
 	pinputs[0] = uint64(Z[0]) |
 			(uint64(Z[4]) << 8) |
@@ -102,7 +101,7 @@ func GetKeyStream(Kc [16]byte, BD_ADDR [6]byte, CLK26 [4]byte,
 		sm.FireEDC()
 		z = sm.Step(lfsrout)
 		if z{
-			KeyStream[(t-240)/8] = KeyStream[(t-240)/8] | (1 << (uint(t) % 8))
+			KeyStream[(t-239)/8] = KeyStream[(t-239)/8] | (1 << (uint(t+1) % 8))
 		}
 	}
 
