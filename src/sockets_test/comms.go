@@ -9,30 +9,37 @@ import (
     "io"
 ) 
 
-func recv_packet(conn io.Reader) uint32 {
-    msg := new(uint32)
-
-    err := binary.Read(conn, binary.BigEndian, msg)
+func recv_packet(conn io.Reader) (Type uint32) {
+    err := binary.Read(conn, binary.BigEndian, &Type)
 
     if err != nil {
-        if err.Error() == "EOF" {
-            return 99
-        }
         fmt.Println("binary.Read failed:", err)
     }
 
-    return *msg
+    return
 }
+
 
 type NegBody struct {
     ID uint32
 }
 
-func send_neg(conn net.Conn, ID uint32) {
-    var Type uint32
-    Type = 0
+func recv_neg(conn io.Reader) (ID uint32) {
+    var msg NegBody
+    err := binary.Read(conn, binary.BigEndian, &msg)
 
-    msg := new(NegBody)
+    if err != nil {
+        fmt.Println("binary.Read failed:", err)
+    }
+
+    fmt.Println(msg)
+    return msg.ID
+}
+
+func send_neg(conn io.Writer, ID uint32) {
+    Type := uint32(0)
+    var msg NegBody
+    
     msg.ID = ID
 
     err := binary.Write(conn, binary.BigEndian, Type)
@@ -48,19 +55,6 @@ func send_neg(conn net.Conn, ID uint32) {
     }
 }
 
-func recv_neg(conn io.Reader) uint32 {
-    msg := new(NegBody)
-
-    err := binary.Read(conn, binary.BigEndian, msg)
-
-    if err != nil {
-        fmt.Println("binary.Read failed:", err)
-    }
-
-    fmt.Println(msg)
-    return msg.ID
-}
-
 
 type InitBody struct {
     Clock uint32
@@ -69,9 +63,9 @@ type InitBody struct {
 }
 
 func recv_init(conn io.Reader) (clock uint32, RAND, Link_key [16]byte) {
-    msg := new(InitBody)
+    var msg InitBody
 
-    err := binary.Read(conn, binary.BigEndian, msg)
+    err := binary.Read(conn, binary.BigEndian, &msg)
 
     if err != nil {
         fmt.Println("binary.Read failed:", err)
@@ -85,11 +79,9 @@ func recv_init(conn io.Reader) (clock uint32, RAND, Link_key [16]byte) {
     return
 }
 
-func send_init(conn net.Conn, clock uint32, RAND, Link_key [16]byte) {
-    var Type uint32
-    Type = 1
-
-    msg := new(InitBody)
+func send_init(conn io.Writer, clock uint32, RAND, Link_key [16]byte) {
+    Type := uint32(1)
+    var msg InitBody
 
     msg.Clock = clock
     msg.RAND = RAND
@@ -116,7 +108,7 @@ type DataBody struct {
 }
 
 func recv_data(conn io.Reader) (clock uint32, Data []byte) {
-    msg := new(DataBody)
+    var msg DataBody
    
     err := binary.Read(conn, binary.BigEndian, &msg.Clock)
     
@@ -132,7 +124,7 @@ func recv_data(conn io.Reader) (clock uint32, Data []byte) {
     
     msg.Data = make([]byte, msg.Length)
 
-    err = binary.Read(conn, binary.BigEndian, msg.Data)
+    err = binary.Read(conn, binary.BigEndian, &msg.Data)
 
     if err != nil {
         fmt.Println("binary.Read failed:", err)
@@ -144,11 +136,10 @@ func recv_data(conn io.Reader) (clock uint32, Data []byte) {
     return
 }
 
-func send_data(conn net.Conn, clock uint32, Data []byte) {
-    var Type uint32
-    Type = 2
+func send_data(conn io.Writer, clock uint32, Data []byte) {
+    Type := uint32(2)
 
-    msg := new(DataBody)
+    var msg DataBody
 
     msg.Data = Data
     msg.Length = uint32(len(msg.Data))
@@ -197,26 +188,23 @@ func server_main() net.Conn {
     }
 
     return conn
-
 }
 
 
 func client_main() net.Conn {
     conn, err := net.Dial("tcp", "127.0.0.1:8080")
+
     if err != nil {
         fmt.Println("net.Dial failed:", err)
     }
 
     return conn
-
 }
 
 
 func main() {
     isServerPtr := flag.Bool("server", false, "Run in server mode?")
-
     flag.Parse()
-
     fmt.Println("Is Server: ", *isServerPtr)
 
     var conn net.Conn
@@ -228,12 +216,11 @@ func main() {
     }
 
     for i := uint32(0); i < 20; i++ {
-
-        fmt.Println(i)
+        fmt.Println("Round: ", i)
 
         send_neg(conn, 56)
         send_init(conn, i, [16]byte{}, [16]byte{}) 
-        send_data(conn, i, []byte{100, 200, 120})
+        send_data(conn, i, []byte{'f', 'o', 'o'})
        
         for j := 0; j < 3; j++ {
             packet_type := recv_packet(conn)
@@ -243,11 +230,9 @@ func main() {
                 case 1: recv_init(conn)
                 case 2: recv_data(conn)
                 case 99: break
-                
             }
         }
     }
 
     conn.Close()
-
 }
