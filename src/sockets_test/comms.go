@@ -6,14 +6,12 @@ import (
     "net"
     "fmt"
     "encoding/binary"
-    "time"
+    "io"
 ) 
 
-func recv_packet(conn net.Conn) uint32 {
+func recv_packet(conn io.Reader) uint32 {
     msg := new(uint32)
 
-    conn.SetDeadline(time.Now().Add(100*time.Second)) 
-    conn.SetReadDeadline(time.Now().Add(100*time.Second)) 
     err := binary.Read(conn, binary.BigEndian, msg)
 
     if err != nil {
@@ -50,7 +48,7 @@ func send_neg(conn net.Conn, ID uint32) {
     }
 }
 
-func recv_neg(conn net.Conn) uint32 {
+func recv_neg(conn io.Reader) uint32 {
     msg := new(NegBody)
 
     err := binary.Read(conn, binary.BigEndian, msg)
@@ -70,7 +68,7 @@ type InitBody struct {
     Link_key [16]byte
 }
 
-func recv_init(conn net.Conn) (clock uint32, RAND, Link_key [16]byte) {
+func recv_init(conn io.Reader) (clock uint32, RAND, Link_key [16]byte) {
     msg := new(InitBody)
 
     err := binary.Read(conn, binary.BigEndian, msg)
@@ -112,14 +110,21 @@ func send_init(conn net.Conn, clock uint32, RAND, Link_key [16]byte) {
 
 
 type DataBody struct {
+    Clock uint32
     Length uint32
     Data []byte
 }
 
-func recv_data(conn net.Conn) (Data []byte) {
+func recv_data(conn io.Reader) (clock uint32, Data []byte) {
     msg := new(DataBody)
    
-    err := binary.Read(conn, binary.BigEndian, &msg.Length)
+    err := binary.Read(conn, binary.BigEndian, &msg.Clock)
+    
+    if err != nil {
+        fmt.Println("binary.Read failed:", err)
+    }
+    
+    err = binary.Read(conn, binary.BigEndian, &msg.Length)
     
     if err != nil {
         fmt.Println("binary.Read failed:", err)
@@ -135,10 +140,11 @@ func recv_data(conn net.Conn) (Data []byte) {
 
     fmt.Println(msg)
 
-    return msg.Data
+    clock, Data = msg.Clock, msg.Data
+    return
 }
 
-func send_data(conn net.Conn, Data []byte) {
+func send_data(conn net.Conn, clock uint32, Data []byte) {
     var Type uint32
     Type = 2
 
@@ -146,8 +152,15 @@ func send_data(conn net.Conn, Data []byte) {
 
     msg.Data = Data
     msg.Length = uint32(len(msg.Data))
+    msg.Clock = clock
    
     err := binary.Write(conn, binary.BigEndian, Type)
+
+    if err != nil {
+        fmt.Println("binary.Write failed:", err)
+    }
+    
+    err = binary.Write(conn, binary.BigEndian, msg.Clock)
 
     if err != nil {
         fmt.Println("binary.Write failed:", err)
@@ -168,61 +181,34 @@ func send_data(conn net.Conn, Data []byte) {
 
 
 
-func server_main() {
+func server_main() net.Conn {
     ln, err := net.Listen("tcp", ":8080")
     
     if err != nil {
         fmt.Println("net.Listen failed:", err)
     }
 
-    for {
-        conn, err := ln.Accept()
-        
-        
-        if err != nil {
-            fmt.Println("ln.Accept failed:", err)
-            continue
-        }
-
-        go func(c net.Conn) {
-            fmt.Printf("Established Connection\n")
-            packet_type := recv_packet(conn)
-
-            switch packet_type {
-                case 0: recv_neg(conn)
-                case 1: recv_init(conn)
-                case 2: recv_data(conn)
-                case 99: break
-            }
-            c.Close()
-        }(conn)
+    conn, err := ln.Accept()
+    
+    fmt.Printf("Accepted Connection\n")
+    
+    if err != nil {
+        fmt.Println("ln.Accept failed:", err)
     }
+
+    return conn
+
 }
 
 
-func client_main() {
+func client_main() net.Conn {
     conn, err := net.Dial("tcp", "127.0.0.1:8080")
     if err != nil {
         fmt.Println("net.Dial failed:", err)
     }
-  
-    send_neg(conn, 56)
 
+    return conn
 
-    conn, err = net.Dial("tcp", "127.0.0.1:8080")
-    if err != nil {
-        fmt.Println("net.Dial failed:", err)
-    }
-    
-    send_init(conn, 1, [16]byte{}, [16]byte{}) 
-    
-    
-    conn, err = net.Dial("tcp", "127.0.0.1:8080")
-    if err != nil {
-        fmt.Println("net.Dial failed:", err)
-    }
-
-    send_data(conn, []byte{100, 200, 120})
 }
 
 
@@ -233,10 +219,35 @@ func main() {
 
     fmt.Println("Is Server: ", *isServerPtr)
 
+    var conn net.Conn
+
     if *isServerPtr {
-        server_main()
+        conn = server_main()
     } else {
-        client_main()
+        conn = client_main()
     }
-    
+
+    for i := uint32(0); i < 20; i++ {
+
+        fmt.Println(i)
+
+        send_neg(conn, 56)
+        send_init(conn, i, [16]byte{}, [16]byte{}) 
+        send_data(conn, i, []byte{100, 200, 120})
+       
+        for j := 0; j < 3; j++ {
+            packet_type := recv_packet(conn)
+
+            switch packet_type {
+                case 0: recv_neg(conn)
+                case 1: recv_init(conn)
+                case 2: recv_data(conn)
+                case 99: break
+                
+            }
+        }
+    }
+
+    conn.Close()
+
 }
