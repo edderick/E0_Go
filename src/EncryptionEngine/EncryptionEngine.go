@@ -135,3 +135,13 @@ func ClockLFSRs(lfsrs [4]*lfsr.LFSR, inputs *[4]uint64){
 		inputs[x] = inputs[x] >> 1
 	}
 }
+
+func Encrypt(pt, keyStream []byte) []byte{
+    ct := make([]byte, len(pt))
+
+    for i := 0; i < len(pt); i++ {
+        ct[i] = pt[i] ^ keyStream[i]
+    }
+
+    return ct 
+}
