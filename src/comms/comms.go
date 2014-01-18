@@ -18,10 +18,10 @@ func Recv_packet(conn io.Reader) (Type uint32) {
 
 
 type NegBody struct {
-    ID uint32
+    BD_ADDR [6]byte
 }
 
-func Recv_neg(conn io.Reader) (ID uint32) {
+func Recv_neg(conn io.Reader) (BD_ADDR [6]byte) {
     var msg NegBody
     err := binary.Read(conn, binary.BigEndian, &msg)
 
@@ -30,14 +30,14 @@ func Recv_neg(conn io.Reader) (ID uint32) {
     }
 
     fmt.Println(msg)
-    return msg.ID
+    return msg.BD_ADDR
 }
 
-func Send_neg(conn io.Writer, ID uint32) {
+func Send_neg(conn io.Writer, BD_ADDR [6]byte) {
     Type := uint32(0)
     var msg NegBody
     
-    msg.ID = ID
+    msg.BD_ADDR = BD_ADDR
 
     err := binary.Write(conn, binary.BigEndian, Type)
 
