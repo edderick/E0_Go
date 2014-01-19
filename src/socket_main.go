@@ -77,8 +77,12 @@ func receiver(conn io.Reader, s *State) {
                 clock, msg := comms.Recv_data(conn)
                 binary.BigEndian.PutUint32(s.clk[:], clock)
 
+                fmt.Println("Recieved: ", string(msg))
+
                 keyStream := EncryptionEngine.GetKeyStream(s.Kc, s.BD_ADDR, s.clk, len(msg))  
                 msg = EncryptionEngine.Encrypt(msg, keyStream) 
+
+                fmt.Println("Decypted as: ", string(msg))
 
                 _, err := http.PostForm("http://127.0.0.1:9999/bar", 
                     url.Values{"msg": {string(msg)}})
@@ -118,7 +122,7 @@ func main() {
         if r.Method == "POST" {
             r.ParseForm()
              
-            fmt.Println("Requested to send: ", r.PostForm["msg"][0])
+            fmt.Println("Sending: ", r.PostForm["msg"][0])
             
             fmt.Fprintf(w, html.EscapeString("Sending packet"))
 
@@ -131,6 +135,8 @@ func main() {
             clock := binary.BigEndian.Uint32(state.clk[:])
             
             comms.Send_data(conn, clock, msg)
+            
+            fmt.Println("Encrypted as: ", string(msg))
         }
     })
 
