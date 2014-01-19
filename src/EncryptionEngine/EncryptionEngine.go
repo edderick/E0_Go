@@ -2,17 +2,21 @@ package EncryptionEngine
 
 import (
 	"fmt"
+    "encoding/binary"
 	"./lfsr"
 	"./state_machine"
 )
 
-func GetKeyStream(Kc [16]byte, BD_ADDR [6]byte, CLK26 [4]byte,
+func GetKeyStream(Kc [16]byte, BD_ADDR [6]byte, clock uint32,
 		bytesReq int) []byte{
 	var lfsrs [4]*lfsr.LFSR
 	lfsrs[0] = lfsr.NewLFSR(25, []int{8, 12, 20, 25}, 24)
 	lfsrs[1] = lfsr.NewLFSR(31, []int{12, 16, 24, 31}, 24)
 	lfsrs[2] = lfsr.NewLFSR(33, []int{4, 24, 28, 33}, 32)
 	lfsrs[3] = lfsr.NewLFSR(39, []int{4, 28, 36, 39}, 32)
+
+    var CLK26 [4]byte
+    binary.BigEndian.PutUint32(CLK26[:], clock)
 
 	var inputs [4]uint64
 	inputs[0] = (uint64(BD_ADDR[2]) << 41) |

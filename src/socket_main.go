@@ -14,12 +14,11 @@ import (
         "net/url"
         "html"
         "log"
-        "encoding/binary"
        )
 
 type State struct {
     Kc [16]byte
-    clk [4]byte
+    clk uint32
     BD_ADDR [6]byte
 }
 
@@ -41,10 +40,10 @@ func server_main(s *State) net.Conn {
 
     s.BD_ADDR = [6]byte{}
     s.Kc = [16]byte{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
-    s.clk = [4]byte{}
+    s.clk = 0
 
-    comms.Send_neg(conn, [6]byte{})
-    comms.Send_init(conn, 0, [16]byte{}, [16]byte{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0})
+    comms.Send_neg(conn, s.BD_ADDR)
+    comms.Send_init(conn, s.clk, [16]byte{}, s.Kc)
 
     return conn
 }
@@ -69,13 +68,10 @@ func receiver(conn io.Reader, s *State) {
             case 0: 
                 s.BD_ADDR = comms.Recv_neg(conn)
             case 1: 
-                var clock uint32
-                clock, _, s.Kc = comms.Recv_init(conn)
-                binary.BigEndian.PutUint32(s.clk[:], clock)
+                s.clk, _, s.Kc = comms.Recv_init(conn)
             case 2: 
-                var clock uint32
-                clock, msg := comms.Recv_data(conn)
-                binary.BigEndian.PutUint32(s.clk[:], clock)
+                var msg []byte
+                s.clk, msg = comms.Recv_data(conn)
 
                 fmt.Println("Recieved: ", string(msg))
 
@@ -132,9 +128,7 @@ func main() {
                 state.Kc, state.BD_ADDR, state.clk, len(pt))  
             msg := EncryptionEngine.Encrypt(pt, keyStream) 
 
-            clock := binary.BigEndian.Uint32(state.clk[:])
-            
-            comms.Send_data(conn, clock, msg)
+            comms.Send_data(conn, state.clk, msg)
             
             fmt.Println("Encrypted as: ", string(msg))
         }
