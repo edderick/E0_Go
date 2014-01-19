@@ -38,13 +38,6 @@ func server_main(s *State) net.Conn {
         fmt.Println("ln.Accept failed:", err)
     }
 
-    s.BD_ADDR = [6]byte{}
-    s.Kc = [16]byte{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
-    s.clk = 0
-
-    comms.Send_neg(conn, s.BD_ADDR)
-    comms.Send_init(conn, s.clk, [16]byte{}, s.Kc)
-
     return conn
 }
 
@@ -58,15 +51,24 @@ func client_main() net.Conn {
     return conn
 }
 
+func is_bigger(ours, theirs [6]byte) bool{
+    //TODO: This... Note the bit ordering..
+    return ours[0] > theirs[0]
+}
 
-func receiver(conn io.Reader, s *State) {
+func receiver(conn io.ReadWriter, s *State) {
   LOOP:
   for {
         packet_type := comms.Recv_packet(conn)
 
         switch packet_type {
             case 0: 
-                s.BD_ADDR = comms.Recv_neg(conn)
+                OTHER_BD_ADDR := comms.Recv_neg(conn)
+                if is_bigger(s.BD_ADDR, OTHER_BD_ADDR) {
+                    comms.Send_init(conn, s.clk, [16]byte{}, s.Kc)
+                } else {
+                    s.BD_ADDR = OTHER_BD_ADDR
+                }
             case 1: 
                 s.clk, _, s.Kc = comms.Recv_init(conn)
             case 2: 
@@ -101,16 +103,22 @@ func main() {
     var p string
 
     var state State
+   
+    state.Kc = [16]byte{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+    state.clk = 0
     
     if *isServerPtr {
+        state.BD_ADDR = [6]byte{255, 255, 255, 255, 255, 255}
         conn = server_main(&state)
         p = ":8888"
     } else {
+        state.BD_ADDR = [6]byte{0, 0, 0, 0, 0, 0}
         conn = client_main()
         p = ":6666"
     }
 
-
+    comms.Send_neg(conn, state.BD_ADDR)
+   
     go receiver(conn, &state)
    
     http.HandleFunc("/bar", func(w http.ResponseWriter, r *http.Request) {
