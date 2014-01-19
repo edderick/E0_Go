@@ -93,15 +93,16 @@ func GetKeyStream(Kc [16]byte, BD_ADDR [6]byte, CLK26 [4]byte,
 	lfsrout = GetLFSROut(lfsrs)
 	z = sm.Step(lfsrout)
 	if z{
-		KeyStream[0] = 1
-	}
-	for t := 240; t < 239 + bytesReq * 8; t++{
+        KeyStream[0] = 1 << 7
+	} 
+    
+    for t := 240; t < 239 + bytesReq * 8; t++{
 		ClockLFSRs(lfsrs, &inputs)
 		lfsrout = GetLFSROut(lfsrs)
 		sm.FireEDC()
 		z = sm.Step(lfsrout)
 		if z{
-			KeyStream[(t-239)/8] = KeyStream[(t-239)/8] | (1 << (uint(t+1) % 8))
+			KeyStream[(t-239)/8] = KeyStream[(t-239)/8] | (1 << (7 -(uint(t+1) % 8)))
 		}
 	}
 

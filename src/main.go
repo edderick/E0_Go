@@ -11,7 +11,7 @@ func main(){
 	BD_ADDR := [6]byte{0, 0, 0, 0, 0, 0}
 	CLK26 := [4]byte{0, 0, 0, 0}
 
-    test_1_expected := [16]byte{98, 150, 114, 134, 201, 44, 58, 225, 142, 24, 41, 73, 216, 237, 177, 5}
+    test_1_expected := [16]byte{70, 105, 78, 97, 147, 52, 92, 135, 113, 24, 148, 146, 27, 183, 141, 160}
     test_1_actual := EncryptionEngine.GetKeyStream(Kc, BD_ADDR, CLK26, 16)
 	
     fmt.Println("Test 1 Expected: ", test_1_expected)
@@ -23,7 +23,7 @@ func main(){
 	BD_ADDR = [6]byte{0, 0, 0, 0, 0, 0}
 	CLK26 = [4]byte{0, 0, 0, 3}
 
-    test_2_expected := [16]byte{49, 195, 216, 156, 160, 107, 84, 50, 108, 177, 90, 75, 82, 194, 108, 82}
+    test_2_expected := [16]byte{140, 195, 27, 57, 5, 214, 42, 76, 54, 141, 90, 210, 74, 67, 54, 74}
     test_2_actual := EncryptionEngine.GetKeyStream(Kc, BD_ADDR, CLK26, 16)
 	
     fmt.Println("Test 2 Expected: ", test_2_expected)
@@ -35,7 +35,7 @@ func main(){
 	BD_ADDR = [6]byte{255, 255, 255, 255, 255, 255}
 	CLK26 = [4]byte{255, 255, 255, 3}
 
-    test_3_expected := [16]byte{209, 255, 191, 149, 177, 107, 159, 158, 67, 61, 166, 26, 202, 232, 33, 114}
+    test_3_expected := [16]byte{139, 255, 253, 169, 141, 214, 249, 121, 194, 188, 101, 88, 83, 23, 132, 78}
     test_3_actual := EncryptionEngine.GetKeyStream(Kc, BD_ADDR, CLK26, 16)
 	
     fmt.Println("Test 3 Expected: ", test_3_expected)
@@ -47,7 +47,7 @@ func main(){
 	BD_ADDR = [6]byte{0x2c, 0x7f, 0x94, 0x56, 0x0f, 0x1b}
 	CLK26 = [4]byte{0x5f, 0x1a, 0x00, 0x02}
 
-    test_4_expected := [16]byte{148, 153, 111, 224, 191, 7, 116, 37, 51, 57, 216, 161, 192, 165, 41, 148}
+    test_4_expected := [16]byte{41, 153, 246, 7, 253, 224, 46, 164, 204, 156, 27, 133, 3, 165, 148, 41}
     test_4_actual := EncryptionEngine.GetKeyStream(Kc, BD_ADDR, CLK26, 16)
 	
     fmt.Println("Test 4 Expected: ", test_4_expected)
