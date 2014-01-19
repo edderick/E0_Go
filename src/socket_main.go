@@ -116,6 +116,7 @@ func main() {
     http.HandleFunc("/bar", func(w http.ResponseWriter, r *http.Request) {
         
         if r.Method == "POST" {
+            state.clk++
             r.ParseForm()
              
             fmt.Println("Sending: ", r.PostForm["msg"][0])
