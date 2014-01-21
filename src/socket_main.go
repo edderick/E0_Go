@@ -14,12 +14,16 @@ import (
         "net/url"
         "html"
         "log"
+        "encoding/hex"
+        "encoding/base64"
+        "time"
        )
 
 type State struct {
     Kc [16]byte
     clk uint32
     BD_ADDR [6]byte
+    is_master bool
 }
 
 
@@ -64,10 +68,11 @@ func receiver(conn io.ReadWriter, s *State) {
         switch packet_type {
             case 0: 
                 OTHER_BD_ADDR := comms.Recv_neg(conn)
-                if is_bigger(s.BD_ADDR, OTHER_BD_ADDR) {
-                    comms.Send_init(conn, s.clk, [16]byte{}, s.Kc)
-                } else {
+                if !is_bigger(s.BD_ADDR, OTHER_BD_ADDR) {
                     s.BD_ADDR = OTHER_BD_ADDR
+                    s.is_master = true
+                } else {
+                    s.is_master = false
                 }
             case 1: 
                 s.clk, _, s.Kc = comms.Recv_init(conn)
@@ -78,17 +83,34 @@ func receiver(conn io.ReadWriter, s *State) {
                 fmt.Println("Recieved: ", string(msg))
 
                 keyStream := EncryptionEngine.GetKeyStream(s.Kc, s.BD_ADDR, s.clk, len(msg))  
-                msg = EncryptionEngine.Encrypt(msg, keyStream) 
+                decrypted_msg := EncryptionEngine.Encrypt(msg, keyStream) 
 
-                fmt.Println("Decypted as: ", string(msg))
+                fmt.Println("Decypted as: ", string(decrypted_msg))
+               
+                ciphertext_b64 := base64.StdEncoding.EncodeToString(msg)
+                keystream_b64 := base64.StdEncoding.EncodeToString(keyStream)
 
-                _, err := http.PostForm("http://127.0.0.1:9999/bar", 
-                    url.Values{"msg": {string(msg)}})
-        
+                var role string
+                
+                if s.is_master {
+                    role = "master"
+                } else {
+                    role = "slave"
+                }
+
+                _, err := http.PostForm("http://127.0.0.1:8000/log?role=" + role,   
+                        url.Values{
+                        "is_receiving" : { "true" },
+                        "keystream" : { keystream_b64 },
+                        "ciphertext" : { ciphertext_b64 },
+                        "plaintext" : { string(decrypted_msg) },
+                        "timestamp" : { time.Now().Format("02 Jan 06 15:04:30") },
+                        })
+                    
                 if err != nil {
                     fmt.Println("There was an http error: ", err)
                 }
-
+              
             case 99: break LOOP
         }
     }
@@ -117,16 +139,33 @@ func main() {
         p = ":6666"
     }
 
+    fmt.Println("Running on ", p)
+
     comms.Send_neg(conn, state.BD_ADDR)
    
     go receiver(conn, &state)
    
     http.HandleFunc("/Kc", func(w http.ResponseWriter, r *http.Request) {
+        var Kc_str string
         if r.Method == "POST" {
             r.ParseForm()
-             
-            fmt.Println("Kc: ", r.PostForm["Kc"][0])
+            Kc_str = r.PostForm["Kc"][0] 
+            fmt.Println("Kc String: ", Kc_str)
         }
+        
+        Kc, err := hex.DecodeString(Kc_str)
+        
+        if err != nil || len(Kc) < 16 {
+            fmt.Println("Invalid key!")
+            return 
+        }
+        
+        fmt.Println("Kc: ", Kc)
+    
+        for i:= 0; i < 16; i++ {
+            state.Kc[i] = Kc[i]
+        }
+
     })
 
     http.HandleFunc("/message", func(w http.ResponseWriter, r *http.Request) {
@@ -135,12 +174,11 @@ func main() {
             state.clk++
             r.ParseForm()
              
-            fmt.Println("Sending: ", r.PostForm["palintext"][0])
+            pt := []byte(r.PostForm["plaintext"][0]) 
+            fmt.Println("Sending: ", string(pt))
             
             fmt.Fprintf(w, html.EscapeString("Sending packet"))
 
-            pt := []byte(r.PostForm["msg"][0]) 
-    
             keyStream := EncryptionEngine.GetKeyStream(
                 state.Kc, state.BD_ADDR, state.clk, len(pt))  
             msg := EncryptionEngine.Encrypt(pt, keyStream) 
@@ -148,6 +186,30 @@ func main() {
             comms.Send_data(conn, state.clk, msg)
             
             fmt.Println("Encrypted as: ", string(msg))
+
+            keystream_b64 := base64.StdEncoding.EncodeToString(keyStream)
+            ciphertext_b64 := base64.StdEncoding.EncodeToString(msg)
+
+            var role string
+            
+            if state.is_master {
+                role = "master"
+            } else {
+                role = "slave"
+            }
+    
+            _, err := http.PostForm("http://127.0.0.1:8000/log?role=" + role,   
+                    url.Values{
+                    "is_receiving" : { "false" },
+                    "keystream" : { keystream_b64 },
+                    "ciphertext" : { ciphertext_b64 },
+                    "plaintext" : { string(pt) },
+                    "timestamp" : { time.Now().Format("02 Jan 06 15:04:30") },
+                    })   
+            
+            if err != nil {
+                    fmt.Println("There was an http error: ", err)
+            }
         }
     })
 
