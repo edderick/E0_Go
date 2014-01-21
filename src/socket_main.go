@@ -104,7 +104,7 @@ func receiver(conn io.ReadWriter, s *State) {
                         "keystream" : { keystream_b64 },
                         "ciphertext" : { ciphertext_b64 },
                         "plaintext" : { string(decrypted_msg) },
-                        "timestamp" : { time.Now().Format("02 Jan 06 15:04:30") },
+                        "timestamp" : { time.Now().Format("Jan _2 15:04:05") },
                         })
                     
                 if err != nil {
@@ -204,7 +204,7 @@ func main() {
                     "keystream" : { keystream_b64 },
                     "ciphertext" : { ciphertext_b64 },
                     "plaintext" : { string(pt) },
-                    "timestamp" : { time.Now().Format("02 Jan 06 15:04:30") },
+                    "timestamp" : { time.Now().Format("Jan _2 15:04:05") },
                     })   
             
             if err != nil {
