@@ -121,13 +121,21 @@ func main() {
    
     go receiver(conn, &state)
    
-    http.HandleFunc("/bar", func(w http.ResponseWriter, r *http.Request) {
+    http.HandleFunc("/Kc", func(w http.ResponseWriter, r *http.Request) {
+        if r.Method == "POST" {
+            r.ParseForm()
+             
+            fmt.Println("Kc: ", r.PostForm["Kc"][0])
+        }
+    })
+
+    http.HandleFunc("/message", func(w http.ResponseWriter, r *http.Request) {
         
         if r.Method == "POST" {
             state.clk++
             r.ParseForm()
              
-            fmt.Println("Sending: ", r.PostForm["msg"][0])
+            fmt.Println("Sending: ", r.PostForm["palintext"][0])
             
             fmt.Fprintf(w, html.EscapeString("Sending packet"))
 
