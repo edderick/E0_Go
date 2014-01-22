@@ -169,6 +169,14 @@ func main() {
 
     })
 
+    http.HandleFunc("/isMaster", func(w http.ResponseWriter, r *http.Request) {
+        if state.is_master {
+            fmt.Fprintf(w, "true")
+        } else {
+            fmt.Fprintf(w, "false")
+        }
+    })
+
     http.HandleFunc("/message", func(w http.ResponseWriter, r *http.Request) {
         
         if r.Method == "POST" {
