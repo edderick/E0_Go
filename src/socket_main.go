@@ -100,6 +100,7 @@ func receiver(conn io.ReadWriter, s *State) {
 
                 _, err := http.PostForm("http://127.0.0.1:8000/log?role=" + role,   
                         url.Values{
+                        "CLK" : { string(s.clk) },
                         "is_receiving" : { "true" },
                         "keystream" : { keystream_b64 },
                         "ciphertext" : { ciphertext_b64 },
@@ -200,6 +201,7 @@ func main() {
     
             _, err := http.PostForm("http://127.0.0.1:8000/log?role=" + role,   
                     url.Values{
+                    "CLK" : { string(state.clk) },
                     "is_receiving" : { "false" },
                     "keystream" : { keystream_b64 },
                     "ciphertext" : { ciphertext_b64 },
