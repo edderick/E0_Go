@@ -57,8 +57,12 @@ func client_main() net.Conn {
 }
 
 func is_bigger(ours, theirs [6]byte) bool{
-    //TODO: This... Note the bit ordering..
-    return ours[0] > theirs[0]
+    for i := 0; i < 6; i++ {
+        if ours[i] != theirs[i] {
+            return ours[i] > theirs[i]
+        }
+    }
+    return false
 }
 
 func receiver(conn io.ReadWriter, s *State) {
