@@ -92,7 +92,7 @@ func receiver(conn io.ReadWriter, s *State) {
                 ciphertext_b64 := base64.StdEncoding.EncodeToString(msg)
                 keystream_b64 := base64.StdEncoding.EncodeToString(keyStream)
 
-                BD_ADDR_hex := hex.EncodeToString(state.BD_ADDR[:])
+                BD_ADDR_hex := hex.EncodeToString(s.BD_ADDR[:])
                 
                 var role string
                 
