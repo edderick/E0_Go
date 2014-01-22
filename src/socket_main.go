@@ -92,6 +92,8 @@ func receiver(conn io.ReadWriter, s *State) {
                 ciphertext_b64 := base64.StdEncoding.EncodeToString(msg)
                 keystream_b64 := base64.StdEncoding.EncodeToString(keyStream)
 
+                BD_ADDR_hex := hex.EncodeToString(state.BD_ADDR[:])
+                
                 var role string
                 
                 if s.is_master {
@@ -102,6 +104,7 @@ func receiver(conn io.ReadWriter, s *State) {
 
                 _, err := http.PostForm("http://127.0.0.1:8000/log?role=" + role,   
                         url.Values{
+                        "BD_ADDR" : { BD_ADDR_hex },
                         "CLK" : { string(s.clk) },
                         "is_receiving" : { "true" },
                         "keystream" : { keystream_b64 },
