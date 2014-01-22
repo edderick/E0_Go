@@ -23,6 +23,7 @@ type State struct {
     Kc [16]byte
     clk uint32
     BD_ADDR [6]byte
+    MASTER_BD_ADDR [6]byte
     is_master bool
 }
 
@@ -68,10 +69,11 @@ func receiver(conn io.ReadWriter, s *State) {
         switch packet_type {
             case 0: 
                 OTHER_BD_ADDR := comms.Recv_neg(conn)
-                if !is_bigger(s.BD_ADDR, OTHER_BD_ADDR) {
-                    s.BD_ADDR = OTHER_BD_ADDR
+                if is_bigger(s.BD_ADDR, OTHER_BD_ADDR) {
+                    s.MASTER_BD_ADDR = s.BD_ADDR
                     s.is_master = true
                 } else {
+                    s.MASTER_BD_ADDR = OTHER_BD_ADDR
                     s.is_master = false
                 }
             case 1: 
@@ -82,7 +84,7 @@ func receiver(conn io.ReadWriter, s *State) {
 
                 fmt.Println("Recieved: ", string(msg))
 
-                keyStream := EncryptionEngine.GetKeyStream(s.Kc, s.BD_ADDR, s.clk, len(msg))  
+                keyStream := EncryptionEngine.GetKeyStream(s.Kc, s.MASTER_BD_ADDR, s.clk, len(msg))  
                 decrypted_msg := EncryptionEngine.Encrypt(msg, keyStream) 
 
                 fmt.Println("Decypted as: ", string(decrypted_msg))
@@ -189,7 +191,7 @@ func main() {
             fmt.Fprintf(w, html.EscapeString("Sending packet"))
 
             keyStream := EncryptionEngine.GetKeyStream(
-                state.Kc, state.BD_ADDR, state.clk, len(pt))  
+                state.Kc, state.MASTER_BD_ADDR, state.clk, len(pt))  
             msg := EncryptionEngine.Encrypt(pt, keyStream) 
 
             comms.Send_data(conn, state.clk, msg)
@@ -198,6 +200,8 @@ func main() {
 
             keystream_b64 := base64.StdEncoding.EncodeToString(keyStream)
             ciphertext_b64 := base64.StdEncoding.EncodeToString(msg)
+
+            BD_ADDR_hex := hex.EncodeToString(state.BD_ADDR[:])
 
             var role string
             
@@ -210,6 +214,7 @@ func main() {
             _, err := http.PostForm("http://127.0.0.1:8000/log?role=" + role,   
                     url.Values{
                     "CLK" : { string(state.clk) },
+                    "BD_ADDR" : { BD_ADDR_hex },
                     "is_receiving" : { "false" },
                     "keystream" : { keystream_b64 },
                     "ciphertext" : { ciphertext_b64 },
