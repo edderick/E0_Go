@@ -27,7 +27,6 @@ type State struct {
     is_master bool
 }
 
-
 func server_main(s *State) net.Conn {
     ln, err := net.Listen("tcp", ":8080")
    
@@ -180,8 +179,10 @@ func main() {
 
     http.HandleFunc("/isMaster", func(w http.ResponseWriter, r *http.Request) {
         if state.is_master {
+            fmt.Println("Sending isMaster - true")
             fmt.Fprintf(w, "true")
         } else {
+            fmt.Println("Sending isMaster - false")
             fmt.Fprintf(w, "false")
         }
     })
